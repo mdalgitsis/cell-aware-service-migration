@@ -100,10 +100,13 @@ here is bound to either vendor.
 
 The mechanism and its measurements were published as:
 
-> R. Sanchez-Mateos Lizcano *et al.*, "AI-Driven Vehicle Condition Monitoring
-> with Cell-Aware Edge Service Migration," *2025 International Balkan
-> Conference on Communications and Networking (BalkanCom)*, 2025.
-> [doi:10.1109/BalkanCom65827.2025.11185956](https://doi.org/10.1109/BalkanCom65827.2025.11185956)
+> C. Kalalas, P. Mulinka, G. Candela Belmonte, M. Fornell, **M. Dalgitsis**,
+> F. Paredes Vera, J. Santaella Sánchez, C. Vicente Villares, R. Sedar,
+> E. Datsika, A. Antonopoulos, A. Fernández Ojea and M. Payaro,
+> "AI-Driven Vehicle Condition Monitoring with Cell-Aware Edge Service
+> Migration," *2025 8th International Balkan Conference on Communications and
+> Networking (BalkanCom)*, pp. 1–6, 2025.
+> [doi:10.1109/balkancom65827.2025.11185956](https://doi.org/10.1109/balkancom65827.2025.11185956)
 
 The service migration mechanism in this repository is my contribution to that
 paper, which is the work of thirteen authors across the project consortium.
