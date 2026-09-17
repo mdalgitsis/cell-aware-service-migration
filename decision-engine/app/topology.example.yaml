@@ -1,0 +1,23 @@
+# gNB-to-edge-site mapping for the Decision Engine.
+#
+# One entry per edge node. The Decision Engine looks up the gnb_id reported by
+# the 5G core, and pins the edge application to the matching site_id.
+#
+#   upf        name of the distributed UPF serving this edge
+#   gnb_id     the gNB the core reports when the UE is on this cell
+#   tai        tracking area identity for this cell
+#   site_id    orchestrator site identifier for this edge node
+#   redis_host address of the edge-local Redis the application uses for state
+edges:
+  edge1:
+    upf: upf1
+    gnb_id: 10
+    tai: tai1
+    site_id: "00000000-0000-0000-0000-000000000001"
+    redis_host: "edge1.example.internal"
+  edge2:
+    upf: upf2
+    gnb_id: 21
+    tai: tai2
+    site_id: "00000000-0000-0000-0000-000000000002"
+    redis_host: "edge2.example.internal"

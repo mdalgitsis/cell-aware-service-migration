@@ -1,0 +1,11 @@
+apiVersion: example.com/v1
+kind: EventSubscription
+metadata:
+  name: event-subscription-druid
+spec:
+  serverUrl: "http://druid.com/events"
+  subscriptionId: "druid-5g-core"
+  requestBody:
+    callbackUrl: "http://<node-ip>:30080/events"
+    key1: "value1"
+    key2: "value2"

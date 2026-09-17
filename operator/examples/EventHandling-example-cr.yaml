@@ -1,0 +1,7 @@
+apiVersion: example.com/v1
+kind: EventHandling
+metadata:
+  name: event-handling-druid
+spec:
+  gnbId: 0
+  subscriptionId: "druid-5g-core"

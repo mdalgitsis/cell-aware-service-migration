@@ -1,0 +1,25 @@
+@startuml
+actor "User/Okto" as User
+participant "StaticTable Controller" as STC
+participant "EventSubscription Controller" as ESC
+participant "EventHandling Controller" as EHC
+participant " Operator NodePort Service" as NPS
+participant "5G Core HTTP Server" as HTTP
+
+
+User -> STC: Apply StaticTable CR
+STC -> STC: Validate Mappings
+STC -> STC: Update Status
+
+User -> ESC: Apply EventSubscription CR
+ESC -> HTTP: Subscribe to Events
+ESC -> ESC: Update Status
+HTTP -> NPS: Send Event
+NPS -> EHC: Forward Event Data
+
+EHC -> EHC: Extract gnbId and subscriptionId
+EHC -> STC: Lookup siteId
+STC -> EHC: Return siteId
+EHC -> EHC: Update Status
+
+@enduml

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kserve-inference
+description: KServe model server for the vehicle condition-monitoring workload, with an optional mediator that feeds inference results to InfluxDB
+type: application
+version: 0.2.0
+appVersion: "0.2.0"

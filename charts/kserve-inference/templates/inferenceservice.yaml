@@ -1,0 +1,17 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: {{ .Values.kserve.name }}
+  namespace: {{ .Values.kserve.namespace }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.kserve.prometheus.port }}"
+    prometheus.io/path: "{{ .Values.kserve.prometheus.path }}"
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: {{ .Values.kserve.model.format }}
+      protocolVersion: v2
+      storageUri: "{{ .Values.kserve.model.storageUri }}"
+    serviceAccountName: {{ .Values.kserve.serviceAccountName }}

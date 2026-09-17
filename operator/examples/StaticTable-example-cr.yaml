@@ -1,0 +1,10 @@
+apiVersion: example.com/v1
+kind: StaticTable
+metadata:
+  name: static-table
+spec:
+  mappings:
+    - gnbId: 10
+      siteId: "edge1"
+    - gnbId: 21
+      siteId: "edge2"

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-topology
+data:
+  topology.yaml: |
+    edges:
+{{ toYaml .Values.topology.edges | indent 6 }}

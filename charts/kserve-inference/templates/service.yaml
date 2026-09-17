@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kserve.name }}-metrics
+  namespace: {{ .Values.kserve.namespace }}
+spec:
+  type: {{ .Values.kserve.service.type }}
+  selector:
+    serving.kserve.io/inferenceservice: {{ .Values.kserve.name }}
+  ports:
+    - name: metrics
+      port: {{ .Values.kserve.prometheus.port }}
+      targetPort: {{ .Values.kserve.prometheus.port }}
+      nodePort: {{ .Values.kserve.service.nodePort }}

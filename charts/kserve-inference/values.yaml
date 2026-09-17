@@ -1,0 +1,39 @@
+mediator:
+  # The mediator posts each inference result to InfluxDB. Disable it to run
+  # the model server on its own.
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: registry.example.internal/mediator
+    tag: latest
+    pullPolicy: IfNotPresent
+  env:
+    REDIS_HOST: edge1.example.internal
+    REDIS_PORT: "30079"
+    INFLUX_URL: http://influxdb.example.internal:30567
+    INFLUX_ORG: influxdata
+    INFLUX_BUCKET: inference
+    KSERVE_URL: http://test-kserve-opt-predictor.custom-model-kserve.svc.cluster.local/v2/models/test-kserve-opt/infer
+  # Redis and InfluxDB credentials are read from a Secret. Create it with:
+  #   kubectl create secret generic mediator-credentials \
+  #     --from-literal=redis-password=... --from-literal=influx-token=...
+  existingSecret: mediator-credentials
+  redisPasswordKey: redis-password
+  influxTokenKey: influx-token
+  ports:
+    - containerPort: 80
+
+kserve:
+  name: test-kserve-opt
+  namespace: custom-model-kserve
+  model:
+    format: mlflow
+    storageUri: s3://mlflow/model/2/artifacts/model
+  serviceAccountName: kserve-sa
+  prometheus:
+    enabled: true
+    port: 8082
+    path: /metrics
+  service:
+    type: NodePort
+    nodePort: 30082

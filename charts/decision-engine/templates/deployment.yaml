@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: decision-engine
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SUPI_OF_INTEREST
+              value: {{ .Values.supiOfInterest | quote }}
+            - name: SERVICE_NAME
+              value: {{ .Values.serviceName | quote }}
+            - name: ORCHESTRATOR_HOST
+              value: {{ .Values.orchestrator.host | quote }}
+            - name: ORCHESTRATOR_ORG
+              value: {{ .Values.orchestrator.org | quote }}
+            - name: ORCHESTRATOR_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.orchestrator.existingSecret }}
+                  key: {{ .Values.orchestrator.userKey }}
+            - name: ORCHESTRATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.orchestrator.existingSecret }}
+                  key: {{ .Values.orchestrator.passwordKey }}
+            - name: TOPOLOGY_PATH
+              value: /app/config/topology.yaml
+            - name: CORE_API_URL
+              value: {{ .Values.core.api.url | quote }}
+            - name: CORE_SUBSCRIPTION_ID
+              value: {{ .Values.core.subscriptionId | quote }}
+            - name: CORE_EVENT_TYPE_FILTER
+              value: {{ .Values.core.eventTypeFilter | quote }}
+            - name: CORE_CALLBACK_URL
+              value: {{ .Values.core.callbackUrl | quote }}
+            - name: CORE_API_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.core.api.existingSecret }}
+                  key: {{ .Values.core.api.userKey }}
+            - name: CORE_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.core.api.existingSecret }}
+                  key: {{ .Values.core.api.passwordKey }}
+          volumeMounts:
+            - mountPath: /app/data
+              name: migration-time-storage
+            - mountPath: /app/config
+              name: topology
+          ports:
+            - containerPort: 8880
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8880
+            initialDelaySeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          lifecycle:
+            # Register the event-subscription callback with the 5G core once
+            # the engine is up, and remove it again on shutdown, so a migrated
+            # or restarted engine never leaves a stale subscription behind.
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    curl -k -sS -u "$CORE_API_USER:$CORE_API_PASSWORD" \
+                      -X POST "$CORE_API_URL" \
+                      -d "id=$CORE_SUBSCRIPTION_ID" \
+                      -d "description=cell-aware service migration" \
+                      -d "event_type_filter=$CORE_EVENT_TYPE_FILTER" \
+                      -d "obj_class_filter=*" \
+                      -d "url=$CORE_CALLBACK_URL" > /proc/1/fd/1 2>/proc/1/fd/2
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    curl -k -sS -u "$CORE_API_USER:$CORE_API_PASSWORD" \
+                      -X DELETE "$CORE_API_URL?id=$CORE_SUBSCRIPTION_ID" \
+                      > /proc/1/fd/1 2>/proc/1/fd/2
+      volumes:
+        - name: migration-time-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-migration-times
+        - name: topology
+          configMap:
+            name: {{ .Release.Name }}-topology

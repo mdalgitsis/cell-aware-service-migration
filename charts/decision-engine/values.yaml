@@ -1,0 +1,64 @@
+image:
+  repository: ghcr.io/mdalgitsis/cell-aware-decision-engine
+  tag: "0.0.2"
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+resources:
+  limits:
+    cpu: "1"
+    memory: "512Mi"
+  requests:
+    cpu: "0.1"
+    memory: "32Mi"
+
+service:
+  nodePort: 30080
+
+# Subscriber whose session events drive migration.
+supiOfInterest: "001010000000000"
+
+# Service orchestrator northbound interface.
+orchestrator:
+  host: orchestrator.example.com
+  org: "00000000-0000-0000-0000-000000000000"
+  # Credentials are read from a Secret. Create it out of band, e.g.
+  #   kubectl create secret generic decision-engine-orchestrator \
+  #     --from-literal=user=you@example.com \
+  #     --from-literal=password=...
+  existingSecret: decision-engine-orchestrator
+  userKey: user
+  passwordKey: password
+
+# Edge application the orchestrator should move between sites.
+serviceName: kserve_model
+
+# 5G core event-subscription API, called from the lifecycle hooks so the
+# engine registers its callback on start and deregisters on shutdown.
+core:
+  subscriptionId: 150
+  eventTypeFilter: http_api_update_success
+  callbackUrl: http://decision-engine.example.internal:30080/form
+  api:
+    url: https://core.example.internal:30443/api/event_subscriber
+    # Basic-auth credentials for the core API, from a Secret.
+    existingSecret: decision-engine-core-api
+    userKey: user
+    passwordKey: password
+
+# gNB-to-edge-site mapping, rendered into a ConfigMap.
+# See decision-engine/app/topology.example.yaml for the schema.
+topology:
+  edges:
+    edge1:
+      upf: upf1
+      gnb_id: 10
+      tai: tai1
+      site_id: "00000000-0000-0000-0000-000000000001"
+      redis_host: edge1.example.internal
+    edge2:
+      upf: upf2
+      gnb_id: 21
+      tai: tai2
+      site_id: "00000000-0000-0000-0000-000000000002"
+      redis_host: edge2.example.internal
